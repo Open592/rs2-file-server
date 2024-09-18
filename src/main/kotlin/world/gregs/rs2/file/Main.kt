@@ -26,7 +26,7 @@ object Main {
         lateinit var cachePath: String
         lateinit var modulus: BigInteger
         lateinit var exponent: BigInteger
-        var prefetchKeys: IntArray = intArrayOf()
+        var prefetchKeys: IntArray? = null
         file.forEachLine { line ->
             val (key, value) = line.split("=")
             when (key) {
@@ -38,7 +38,7 @@ object Main {
                 "cachePath" -> cachePath = value
                 "rsaModulus" -> modulus = BigInteger(value, 16)
                 "rsaPrivate" -> exponent = BigInteger(value, 16)
-                "prefetchKeys" -> prefetchKeys = value.split(",").map { it.toInt() }.toIntArray()
+                "prefetchKeys" -> prefetchKeys = resolvePrefetchKeysFromConfig(value)
             }
         }
         logger.info { "Settings loaded." }
@@ -47,17 +47,31 @@ object Main {
         val versionTable = cache.generateNewUkeys(exponent, modulus)
         logger.debug { "Version table generated: ${versionTable.contentToString()}" }
 
-        if (prefetchKeys.isEmpty()) {
+        if (prefetchKeys == null) {
             prefetchKeys = generatePrefetchKeys(cache)
             logger.debug { "Prefetch keys generated: ${prefetchKeys.contentToString()}" }
         }
         logger.info { "Cache loaded." }
 
         val fileServer = FileServer(DataProvider(cache), versionTable)
-        val network = Network(fileServer, prefetchKeys, revision, acknowledgeId, statusId)
+        val network = Network(fileServer, prefetchKeys!!, revision, acknowledgeId, statusId)
         logger.info { "Loading complete [${System.currentTimeMillis() - start}ms]" }
         val runtime = Runtime.getRuntime()
         runtime.addShutdownHook(thread(start = false) { network.stop() })
         network.start(port, threads)
+    }
+
+    /**
+     * Given the `prefetchKeys` configuration value from `file-server.properties` resolve the values to an
+     * integer array.
+     */
+    private fun resolvePrefetchKeysFromConfig(value: String): IntArray {
+        if (value.isEmpty()) {
+            return intArrayOf()
+        }
+
+        return value.split(",")
+            .mapNotNull { it.toIntOrNull() }
+            .toIntArray()
     }
 }
