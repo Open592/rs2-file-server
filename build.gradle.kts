@@ -3,12 +3,12 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath(kotlin("gradle-plugin", version = "1.4.21"))
+        classpath(kotlin("gradle-plugin", version = "2.0.21"))
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "2.0.21"
 }
 
 group = "world.gregs.rs2.file"
@@ -19,26 +19,16 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("com.displee:rs-cache-library:6.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-    implementation("io.ktor:ktor-server-core:1.5.0")
-    implementation("io.ktor:ktor-network:1.5.0")
+    implementation("com.displee:rs-cache-library:7.1.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("io.ktor:ktor-server-core:3.0.1")
+    implementation("io.ktor:ktor-network:3.0.1")
 
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("com.michael-bull.kotlin-inline-logger:kotlin-inline-logger-jvm:1.0.2")
+    implementation("ch.qos.logback:logback-classic:1.5.12")
+    implementation("com.michael-bull.kotlin-inline-logger:kotlin-inline-logger-jvm:1.0.5")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.2")
-    testImplementation("io.mockk:mockk:1.10.0")
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.3")
+    testImplementation("io.mockk:mockk:1.13.13")
 }

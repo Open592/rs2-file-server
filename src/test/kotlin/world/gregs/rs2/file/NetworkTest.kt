@@ -4,7 +4,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.TestFactory
 internal class NetworkTest {
 
     @Test
-    fun `Connect, sync, ack and fulfill`() = runBlockingTest {
+    fun `Connect, sync, ack and fulfill`() = runTest {
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         mockkStatic("io.ktor.network.sockets.SocketsKt")
         val network = spyk(Network(mockk(), intArrayOf(), 0, 0, 0))
@@ -39,7 +39,7 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Failed ack won't fulfill`() = runBlockingTest {
+    fun `Failed ack won't fulfill`() = runTest {
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         mockkStatic("io.ktor.network.sockets.SocketsKt")
         val network = spyk(Network(mockk(), intArrayOf(), 0, 0, 0))
@@ -66,7 +66,7 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Synchronise client and server`() = runBlockingTest {
+    fun `Synchronise client and server`() = runTest {
         val revision = 1337
         val keys = intArrayOf(0xffff, 0xfff, 0xff, 0xf)
         val network = Network(mockk(), keys, revision, 0, 0)
@@ -91,14 +91,14 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Fail to synchronise with wrong revision`() = runBlockingTest {
+    fun `Fail to synchronise with wrong revision`() = runTest {
         val revision = 10
         val network = Network(mockk(), intArrayOf(), revision, 0, 0)
         val read: ByteReadChannel = mockk()
         val write: ByteWriteChannel = mockk()
 
         coEvery { write.writeByte(any()) } just Runs
-        coEvery { write.close() } returns true
+        coEvery { write.close() } just Runs
 
         coEvery { read.readByte() } returns 15
         coEvery { read.readInt() } returns 13
@@ -115,14 +115,14 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Fail to synchronise with wrong id`() = runBlockingTest {
+    fun `Fail to synchronise with wrong id`() = runTest {
         val revision = 420
         val network = Network(mockk(), intArrayOf(), revision, 0, 0)
         val read: ByteReadChannel = mockk()
         val write: ByteWriteChannel = mockk()
 
         coEvery { write.writeByte(any()) } just Runs
-        coEvery { write.close() } returns true
+        coEvery { write.close() } just Runs
 
         coEvery { read.readByte() } returns 123
 
@@ -136,7 +136,7 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Acknowledge client`() = runBlockingTest {
+    fun `Acknowledge client`() = runTest {
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         val network = Network(mockk(), intArrayOf(), 0, 3, 0)
         val read: ByteReadChannel = mockk()
@@ -151,13 +151,13 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Don't acknowledge wrong opcode`() = runBlockingTest {
+    fun `Don't acknowledge wrong opcode`() = runTest {
         val network = Network(mockk(), intArrayOf(), 0, 3, 0)
         val read: ByteReadChannel = mockk()
         val write: ByteWriteChannel = mockk()
 
         coEvery { write.writeByte(any()) } just Runs
-        coEvery { write.close() } returns true
+        coEvery { write.close() } just Runs
 
         coEvery { read.readByte() } returns 5
 
@@ -171,14 +171,14 @@ internal class NetworkTest {
     }
 
     @Test
-    fun `Don't acknowledge wrong session id`() = runBlockingTest {
+    fun `Don't acknowledge wrong session id`() = runTest {
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         val network = Network(mockk(), intArrayOf(), 0, 0, 0)
         val read: ByteReadChannel = mockk()
         val write: ByteWriteChannel = mockk()
 
         coEvery { write.writeByte(any()) } just Runs
-        coEvery { write.close() } returns true
+        coEvery { write.close() } just Runs
 
         coEvery { read.readByte() } returns 6
         coEvery { read.readMedium() } returns 12
@@ -196,7 +196,7 @@ internal class NetworkTest {
     fun `Verify status update`() = intArrayOf(3, 2).map { opcode ->
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         dynamicTest("Verify status logged ${if (opcode == 3) "out" else "in"}") {
-            runBlockingTest {
+            runTest {
                 val network = Network(mockk(), intArrayOf(), 0, 0, 0)
                 val read: ByteReadChannel = mockk()
                 val write: ByteWriteChannel = mockk()
@@ -220,13 +220,13 @@ internal class NetworkTest {
     fun `Invalid status update session id`() = intArrayOf(3, 2).map { opcode ->
         mockkStatic("world.gregs.rs2.file.JagexTypesKt")
         dynamicTest("Invalid status logged ${if (opcode == 3) "out" else "in"}") {
-            runBlockingTest {
+            runTest {
                 val network = Network(mockk(), intArrayOf(), 0, 0, 0)
                 val read: ByteReadChannel = mockk()
                 val write: ByteWriteChannel = mockk()
 
                 coEvery { write.writeByte(any()) } just Runs
-                coEvery { write.close() } returns true
+                coEvery { write.close() } just Runs
 
                 coEvery { read.readByte() } returns opcode.toByte()
                 coEvery { read.readMedium() } returns 123
