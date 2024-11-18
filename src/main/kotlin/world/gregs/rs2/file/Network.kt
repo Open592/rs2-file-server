@@ -126,7 +126,9 @@ class Network(
      * Verify status updates and pass requests onto the [server] to fulfill
      */
     suspend fun readRequest(read: ByteReadChannel, write: ByteWriteChannel) {
-        when (val opcode = read.readByte().toInt()) {
+        val opcode = read.readByte().toInt()
+
+        when (opcode) {
             STATUS_LOGGED_OUT, STATUS_LOGGED_IN -> verify(read, write, statusId)
             PRIORITY_REQUEST, PREFETCH_REQUEST -> server.fulfill(read, write, opcode == PREFETCH_REQUEST)
             else -> {
@@ -151,8 +153,8 @@ class Network(
         const val ACKNOWLEDGE = 6
 
         // Response codes
-        private const val GAME_UPDATED = 6
-        private const val BAD_SESSION_ID = 10
-        private const val REJECT_SESSION = 11
+        private const val GAME_UPDATED: Byte = 6
+        private const val BAD_SESSION_ID: Byte = 10
+        private const val REJECT_SESSION: Byte = 11
     }
 }

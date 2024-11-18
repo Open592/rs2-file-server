@@ -8,6 +8,7 @@ import io.ktor.utils.io.*
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -62,7 +63,7 @@ internal class FileServerTest {
     }
 
     @Test
-    fun `Encode header for prefetch request`() = runBlockingTest {
+    fun `Encode header for prefetch request`() = runTest {
         val server = spyk(FileServer(mockk(), byteArrayOf()))
         val write: ByteWriteChannel = mockk()
         val file = byteArrayOf(2, 0, 0, -44, 49)
@@ -77,13 +78,13 @@ internal class FileServerTest {
         coVerifyOrder {
             write.writeByte(1)
             write.writeShort(2)
-            write.writeByte(130)
+            write.writeByte(130.toByte())
             server.serve(write, 4, file, 1, 54329, 512)
         }
     }
 
     @Test
-    fun `Encode header for priority request`() = runBlockingTest {
+    fun `Encode header for priority request`() = runTest {
         val server = spyk(FileServer(mockk(), byteArrayOf()))
         val write: ByteWriteChannel = mockk()
         val file = byteArrayOf(0, 0, 0, 0, 10)
@@ -104,7 +105,7 @@ internal class FileServerTest {
     }
 
     @Test
-    fun `Encode small single sector`() = runBlockingTest {
+    fun `Encode small single sector`() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
         val server = FileServer(mockk(), byteArrayOf())
         val write: ByteWriteChannel = mockk()
@@ -118,7 +119,7 @@ internal class FileServerTest {
     }
 
     @Test
-    fun `Encode fixed size single sector`() = runBlockingTest {
+    fun `Encode fixed size single sector`() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
         val server = FileServer(mockk(), byteArrayOf())
         val write: ByteWriteChannel = mockk()
@@ -132,7 +133,7 @@ internal class FileServerTest {
     }
 
     @Test
-    fun `Encode two sectors`() = runBlockingTest {
+    fun `Encode two sectors`() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5, 6, 7)
         val server = FileServer(mockk(), byteArrayOf())
         val write: ByteWriteChannel = mockk()
@@ -143,7 +144,7 @@ internal class FileServerTest {
 
         coVerifyOrder {
             write.writeFully(data, 2, 4)
-            write.writeByte(255)
+            write.writeByte(255.toByte())
             write.writeFully(data, 6, 1)
         }
     }

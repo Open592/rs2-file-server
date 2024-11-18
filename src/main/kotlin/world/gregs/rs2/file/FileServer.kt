@@ -38,9 +38,16 @@ class FileServer(
         val compression = data[0].toInt()
         val size = getInt(data[1], data[2], data[3], data[4]) + if (compression != 0) 8 else 4
         logger.trace { "Serving file $index $archive - $size." }
-        write.writeByte(index)
-        write.writeShort(archive)
-        write.writeByte(if (prefetch) compression or 0x80 else compression)
+        write.writeByte(index.toByte())
+        write.writeShort(archive.toShort())
+
+        val compressionByte = if (prefetch) {
+            compression or 0x80
+        } else {
+            compression
+        }.toByte()
+
+        write.writeByte(compressionByte)
         serve(write, HEADER, data, OFFSET, size, SPLIT)
     }
 
@@ -52,7 +59,7 @@ class FileServer(
         write.writeFully(source, offset, length)
         var written = length
         while (written < size) {
-            write.writeByte(SEPARATOR)
+            write.writeByte(SEPARATOR.toByte())
 
             length = if (size - written < split) size - written else split - 1
             write.writeFully(source, written + offset, length)

@@ -44,8 +44,8 @@ object Main {
         logger.info { "Settings loaded." }
 
         val cache = CacheLibrary(cachePath)
-        val versionTable = cache.generateNewUkeys(exponent, modulus)
-        logger.debug { "Version table generated: ${versionTable.contentToString()}" }
+        val versionTable = cache.generateUkeys(false)
+        logger.info { "Version table generated: ${versionTable.contentToString()}" }
 
         if (prefetchKeys == null) {
             prefetchKeys = generatePrefetchKeys(cache)
